@@ -43,11 +43,11 @@ then
     echo -e $usageExamples
     exit 1
 else
-    if [[ $1 = @(*[0-9]*|!([+-]|)) && $1 = ?([+-])*([0-9])?(.*([0-9])) ]]
+    if [[ $1 = @(*[0-9]*|!([+-]|)) && $1 = ?([0-9])?(.*([0-9])) ]]
     then
         tempoValue=$1
     else
-        echo "The tempo change value must be a real number and not a string."
+        echo "The tempo change value must be a real positive number and not a string."
         echo -e $usageExamples
         exit 1
     fi
