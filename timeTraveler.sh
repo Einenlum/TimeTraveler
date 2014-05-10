@@ -29,10 +29,7 @@ PINK="\\033[1;35m"
 DEFAULT="\\033[0;39m"
 
 ## Declaration of useful variables
-workingDirectory=`pwd`
-outputFolder=$workingDirectory/$outputName
 packageList=('sox' 'libsox-fmt-mp3') # Array with required dependencies
-
 
 
 ## Welcome
@@ -79,65 +76,92 @@ fi
 if [[ ${continueDespiteErrors,,} == 'y' ]] || [[ ${continueDespiteErrors,,} == 'yes' || $counterUninstalled -eq 0 ]] # If the user want to continue or if everything is correctly installed
 then
     echo -e "\n"
-    echo -e "The script is going to analyze the current folder.\n"
+
+    ## Checking parameter
+    if [[ -z $1 ]] ## If parameter is empty
+    then
+        workingDirectory=`pwd`
+        echo -e "No folder was given in parameter. The script is going to analyze the current folder.\n"
+    else
+        str=$1
+        i=$((${#str}-1))
+        if [[ ${str:$i:1} == "/" ]] ## If the parameter ends by "/"
+        then
+            workingDirectory=${str%/} ## we remove the "/"
+        else
+            workingDirectory=$1
+        fi
+        echo -e "The script is going to analyze the working folder given in parameter.\n"
+    fi
 
     sleep 1.5
 
-    if [ -d $outputFolder ]    # Does the folder exist?
+    if [ -d $workingDirectory -a -r $workingDirectory ]    # Does the working directory exist and is readable?
     then
-        echo -e "$GREEN" "The output folder $outputFolder does exist." "$DEFAULT"
-    else
-        echo -e "$YELLOW" "The output folder $outputFolder does not exist. It is going to be created." "$DEFAULT"
-        mkdir $outputFolder
-    fi
+        echo -e "$GREEN" "The working directory $workingDirectory does exist and is readable." "$DEFAULT"
 
-    
-    if [ -r $outputFolder ] && [ -w $outputFolder ] # Is the folder writable?
-    then
-        echo -e "$GREEN" "The output folder $outputFolder is readable and writable.\n" "$DEFAULT"
-        sleep 1.5
+        outputFolder=$workingDirectory/$outputName
 
-        ## List of the files in the current folder
-        counter=0
-        shopt -s nullglob
-        for file in *.mp3    # For every mp3 file in the folder
-        do
-            if [[ -f $file ]]    # And if it's not a folder
-            then
-                treatment="Treatment of the file called $PINK$file$DEFAULT:"
-                outputName=${file%.mp3}   # Removing the mp3 output of the file. (For the explanation: http://stackoverflow.com/questions/125281/how-do-i-remove-the-file-suffix-and-path-portion-from-a-path-string-in-bash)
-                outputName+=$outputExtension # Adding the extension that was put on the top of the script
-                outputName+=".mp3"    # Adding the mp3 extension
-                fileoutput="$outputFolder/$outputName"   # Final address of the mp3 output file
-
-
-
-                if [[ ! -f $fileoutput ]] 
-                then # If the file does not exist
-                    echo -e "$treatment$YELLOW The file is going to be TimeTraveled$DEFAULT"
-                    sleep 1
-                    sox -S "$file" "$fileoutput" tempo $tempoValue   # We give to sox the result
-                    counter+=1
-                else # If it does exist
-                    echo -e "$treatment$GREEN OK$DEFAULT"
-                fi
-
-            fi
-        done
-
-        if [ $counter -eq 0 ] # If no file needs to be treated
+        if [ -d $outputFolder ]    # Does the folder exist?
         then
-            echo -e "\n"
-            echo -e "$BLUE" "All files are already TimeTraveled." "$DEFAULT"
-            echo -e "\n"
+            echo -e "$GREEN" "The output folder $outputFolder does exist." "$DEFAULT"
         else
-            echo -e "\n"
-            echo -e "$BLUE" "All files have been TimeTravalled." "$DEFAULT"
-            echo -e "\n"
+            echo -e "$YELLOW" "The output folder $outputFolder does not exist. It is going to be created." "$DEFAULT"
+            mkdir $outputFolder
         fi
 
-    else # If the output folder can't be written or read
-        echo -e "$RED" "The $outputFolder folder can't be read or written." "$DEFAULT"
+        
+        if [ -r $outputFolder ] && [ -w $outputFolder ] # Is the folder writable?
+        then
+            echo -e "$GREEN" "The output folder $outputFolder is readable and writable.\n" "$DEFAULT"
+            sleep 1.5
+
+            ## List of the files in the current folder
+            counter=0
+            shopt -s nullglob
+            for file in $workingDirectory/*.mp3    # For every mp3 file in the folder
+            do
+                if [[ -f $file ]]    # And if it's not a folder
+                then
+                    filename=$(basename "$file")
+                    treatment="Treatment of the file called $PINK$filename$DEFAULT:"
+                    outputName=${filename%.mp3}   # Removing the mp3 output of the file. (For the explanation: http://stackoverflow.com/questions/125281/how-do-i-remove-the-file-suffix-and-path-portion-from-a-path-string-in-bash)
+                    outputName+=$outputExtension # Adding the extension that was put on the top of the script
+                    outputName+=".mp3"    # Adding the mp3 extension
+                    fileoutput="$outputFolder/$outputName"   # Final address of the mp3 output file
+
+
+
+                    if [[ ! -f $fileoutput ]] 
+                    then # If the file does not exist
+                        echo -e "$treatment$YELLOW The file is going to be TimeTraveled$DEFAULT"
+                        sleep 1
+                        sox -S "$file" "$fileoutput" tempo $tempoValue   # We give to sox the result
+                        counter+=1
+                    else # If it does exist
+                        echo -e "$treatment$GREEN OK$DEFAULT"
+                    fi
+
+                fi
+            done
+
+            if [ $counter -eq 0 ] # If no file needs to be treated
+            then
+                echo -e "\n"
+                echo -e "$BLUE" "All files are already TimeTraveled." "$DEFAULT"
+                echo -e "\n"
+            else
+                echo -e "\n"
+                echo -e "$BLUE" "All files have been TimeTravalled." "$DEFAULT"
+                echo -e "\n"
+            fi
+
+        else # If the output folder can't be written or read
+            echo -e "$RED" "The $outputFolder folder can't be read or written." "$DEFAULT"
+        fi
+
+    else
+        echo -e "$YELLOW" "The working directory $workingDirectory does not exist or is not readable.\n End of the script." "$DEFAULT"
     fi
 
 else # If the user doesn't want to use the script anymore
