@@ -8,8 +8,6 @@
 
 ##### VARIABLES TO EDIT #######
 
-# New tempo (1.35 means increasing the tempo of 35%, 0.8 means reducing it of 20%)
-tempoValue=1.25
 # Name of the subfolder which will receive the modified mp3 files
 outputName="TempoFiles"
 # Extension to add to new files after the treatment (facultative). Ex: file1.mp3 will have a modified copy called file1--tempo.mp3. Let it empty if you want to keep the same filename.
@@ -30,17 +28,34 @@ DEFAULT="\\033[0;39m"
 
 ## Declaration of useful variables
 packageList=('sox' 'libsox-fmt-mp3') # Array with required dependencies
-
+usageExamples="\nExamples of correct use:\n\nThis line will reduce by 10% the tempo of all mp3 files in the current folder:\n\t./timeTraveler.sh 0.9\n\nThis line will increase by 40% the tempo of all mp3 files in ~/Podcasts:\n\t./timeTraveler.sh 1.40 ~/Podcasts\n"
 
 ## Welcome
 
 echo -e "\n" # Space insertion
-echo -e "$TEAL" "===== TimeTraveler ===== $DEFAULT"
-echo -e "This script only treats the mp3 files in the current folder.\n"
-echo -e "The script checks if the required dependencies are installed.\n"
+echo -e "$TEAL" "===== TimeTraveler ===== $DEFAULT\n"
 
+## Check the tempoValue given in parameter
+shopt -s extglob
+if [[ -z $1 ]]
+then
+    echo -e "You must give the tempo change value as first parameter.\n1.3 will increase the tempo by 30%, 0.3 will reduce it by 70%."
+    echo -e $usageExamples
+    exit 1
+else
+    if [[ $1 = @(*[0-9]*|!([+-]|)) && $1 = ?([+-])*([0-9])?(.*([0-9])) ]]
+    then
+        tempoValue=$1
+    else
+        echo "The tempo change value must be a real number and not a string."
+        echo -e $usageExamples
+        exit 1
+    fi
+fi
 
 ## Dependencies check
+
+echo -e "The script checks if the required dependencies are installed.\n"
 
 counterUninstalled=0 # We initialize a counter to keep in track the number of uninstalled packages
 for package in "${packageList[@]}" # For every required package...
@@ -78,18 +93,18 @@ then
     echo -e "\n"
 
     ## Checking parameter
-    if [[ -z $1 ]] ## If parameter is empty
+    if [[ -z $2 ]] ## If parameter is empty
     then
         workingDirectory=`pwd`
         echo -e "No folder was given in parameter. The script is going to analyze the current folder.\n"
     else
-        str=$1
+        str=$2
         i=$((${#str}-1))
         if [[ ${str:$i:1} == "/" ]] ## If the parameter ends by "/"
         then
             workingDirectory=${str%/} ## we remove the "/"
         else
-            workingDirectory=$1
+            workingDirectory=$2
         fi
         echo -e "The script is going to analyze the working folder given in parameter.\n"
     fi
