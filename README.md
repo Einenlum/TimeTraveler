@@ -25,7 +25,7 @@ Then it can be used in the current directory or it can process another directory
 
 ### Syntax
 
-    ./timeTraveler.sh tempoFactor [folder]
+    ./timeTraveler.sh tempoFactor [directory]
     
 The tempoFactor must be a real positive number.
 
