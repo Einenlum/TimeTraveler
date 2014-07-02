@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # TimeTraveler Script
-# This script gets all the mp3 of a folder and creates a copy of them with a different tempo in a subfolder.
-# The script must be called without arguments in the wanted folder.
+# This script gets all the mp3 of a directory and creates a copy of them with a different tempo in a subdirectory.
+# The script must be called without arguments in the wanted directory.
 # For now the script only works with mp3. It needs that packages libsox-fmt-mp3 and sox are installed (sudo apt-get install libsox-fmt-mp3 sox).
 
 
 ##### VARIABLES TO EDIT #######
 
-# Name of the subfolder which will receive the modified mp3 files
+# Name of the subdirectory which will receive the modified mp3 files
 outputName="TempoFiles"
 # Extension to add to new files after the treatment (facultative). Ex: file1.mp3 will have a modified copy called file1--tempo.mp3. Let it empty if you want to keep the same filename.
 outputExtension="--tempo"
@@ -28,7 +28,7 @@ DEFAULT="\\033[0;39m"
 
 ## Declaration of useful variables
 packageList=('sox' 'libsox-fmt-mp3') # Array with required dependencies
-usageExamples="\nExamples of correct use:\n\nThis line will reduce by 10% the tempo of all mp3 files in the current folder:\n\t./timeTraveler.sh 0.9\n\nThis line will increase by 40% the tempo of all mp3 files in ~/Podcasts:\n\t./timeTraveler.sh 1.40 ~/Podcasts\n"
+usageExamples="\nExamples of correct use:\n\nThis line will reduce by 10% the tempo of all mp3 files in the current directory:\n\t./timeTraveler.sh 0.9\n\nThis line will increase by 40% the tempo of all mp3 files in ~/Podcasts:\n\t./timeTraveler.sh 1.40 ~/Podcasts\n"
 
 ## Welcome
 
@@ -96,7 +96,7 @@ then
     if [[ -z $2 ]] ## If parameter is empty
     then
         workingDirectory=`pwd`
-        echo -e "No folder was given in parameter. The script is going to analyze the current folder.\n"
+        echo -e "No directory was given in parameter. The script is going to analyze the current directory.\n"
     else
         str=$2
         i=$((${#str}-1))
@@ -106,7 +106,7 @@ then
         else
             workingDirectory=$2
         fi
-        echo -e "The script is going to analyze the working folder given in parameter.\n"
+        echo -e "The script is going to analyze the working directory given in parameter.\n"
     fi
 
     sleep 1.5
@@ -115,35 +115,35 @@ then
     then
         echo -e "$GREEN" "The working directory $workingDirectory does exist and is readable." "$DEFAULT"
 
-        outputFolder=$workingDirectory/$outputName
+        outputDirectory=$workingDirectory/$outputName
 
-        if [ -d $outputFolder ]    # Does the folder exist?
+        if [ -d $outputDirectory ]    # Does the directory exist?
         then
-            echo -e "$GREEN" "The output folder $outputFolder does exist." "$DEFAULT"
+            echo -e "$GREEN" "The output directory $outputDirectory does exist." "$DEFAULT"
         else
-            echo -e "$YELLOW" "The output folder $outputFolder does not exist. It is going to be created." "$DEFAULT"
-            mkdir $outputFolder
+            echo -e "$YELLOW" "The output directory $outputDirectory does not exist. It is going to be created." "$DEFAULT"
+            mkdir $outputDirectory
         fi
 
         
-        if [ -r $outputFolder ] && [ -w $outputFolder ] # Is the folder writable?
+        if [ -r $outputDirectory ] && [ -w $outputDirectory ] # Is the directory writable?
         then
-            echo -e "$GREEN" "The output folder $outputFolder is readable and writable.\n" "$DEFAULT"
+            echo -e "$GREEN" "The output directory $outputDirectory is readable and writable.\n" "$DEFAULT"
             sleep 1.5
 
-            ## List of the files in the current folder
+            ## List of the files in the current directory
             counter=0
             shopt -s nullglob
-            for file in $workingDirectory/*.mp3    # For every mp3 file in the folder
+            for file in $workingDirectory/*.mp3    # For every mp3 file in the directory
             do
-                if [[ -f $file ]]    # And if it's not a folder
+                if [[ -f $file ]]    # And if it's not a directory
                 then
                     filename=$(basename "$file")
                     treatment="Treatment of the file called $PINK$filename$DEFAULT:"
                     outputName=${filename%.mp3}   # Removing the mp3 output of the file. (For the explanation: http://stackoverflow.com/questions/125281/how-do-i-remove-the-file-suffix-and-path-portion-from-a-path-string-in-bash)
                     outputName+=$outputExtension # Adding the extension that was put on the top of the script
                     outputName+=".mp3"    # Adding the mp3 extension
-                    fileoutput="$outputFolder/$outputName"   # Final address of the mp3 output file
+                    fileoutput="$outputDirectory/$outputName"   # Final address of the mp3 output file
 
 
 
@@ -171,8 +171,8 @@ then
                 echo -e "\n"
             fi
 
-        else # If the output folder can't be written or read
-            echo -e "$RED" "The $outputFolder folder can't be read or written." "$DEFAULT"
+        else # If the output directory can't be written or read
+            echo -e "$RED" "The $outputDirectory directory can't be read or written." "$DEFAULT"
         fi
 
     else
